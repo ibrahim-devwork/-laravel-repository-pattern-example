@@ -7,20 +7,20 @@ use App\Http\Requests\Items\ShowItemRequest;
 use App\Http\Requests\Items\StoreItemRequest;
 use App\Http\Requests\Items\UpdateItemRequest;
 use App\Http\Resources\ItemResource;
-use App\Services\ItemService;
+use App\Repositories\ItemRepositoryInterface;
 use Illuminate\Support\Facades\Log;
 
 class ItemController extends Controller
 {
-    public function __construct(protected ItemService $itemService)
+    public function __construct(protected ItemRepositoryInterface $itemRepositoryInterface)
     {
-        $this->itemService = $itemService;
+        $this->itemRepositoryInterface = $itemRepositoryInterface;
     }
 
     public function index() {
         try {
 
-            $items = $this->itemService->all();
+            $items = $this->itemRepositoryInterface->all(['*'], [], true);
             return ItemResource::collection($items);
 
         } catch(\Exception $error) {
@@ -32,7 +32,7 @@ class ItemController extends Controller
     public function show(int $id, ShowItemRequest $request) {
         try {
 
-            $items = $this->itemService->find($id);
+            $items = $this->itemRepositoryInterface->find($id);
             return new ItemResource($items);
 
         } catch(\Exception $error) {
@@ -45,7 +45,7 @@ class ItemController extends Controller
         try {
 
             $validated_data = $request->validated();
-            $this->itemService->create($validated_data);   
+            $this->itemRepositoryInterface->create($validated_data);   
             return response()->json(['message' => 'This item has been stored successfully.'], 201);
 
         } catch(\Exception $error) {
@@ -58,7 +58,7 @@ class ItemController extends Controller
         try {
 
             $validated_data = $request->validated();
-            $this->itemService->update($id, $validated_data);
+            $this->itemRepositoryInterface->update($id, $validated_data);
             return response()->json(['message' => 'This item has been updated successfully.'], 200);
 
         } catch(\Exception $error) {
@@ -70,7 +70,7 @@ class ItemController extends Controller
     public function destroy(int $id, DeleteItemRequest $request) {
         try {
 
-            $this->itemService->delete($id);
+            $this->itemRepositoryInterface->delete($id);
             return response()->json(['message' => 'This item has been deleted successfully.'], 200);
 
         } catch(\Exception $error) {
